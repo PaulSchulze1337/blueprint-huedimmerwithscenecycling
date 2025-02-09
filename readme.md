@@ -87,7 +87,7 @@ Once you've created an automation using this blueprint, here's how to control yo
 
   * **Zigbee2MQTT Required:** This blueprint is designed to work with a Philips Hue Dimmer connected to Home Assistant via Zigbee2MQTT. Ensure your dimmer is properly paired and publishing MQTT messages.
   * **Input Text Helper is Mandatory for Scene Cycling:** Scene cycling functionality will **not work** without properly creating and configuring the `input_text` helper entity as described in the setup.
-  * **Default Scene Type is RGB:** If you use scene cycling without customizing scene settings, scenes will default to RGB color scenes, which might not be ideal for bulbs that don't support RGB color. Consider customizing your scene settings, especially for scene cycling.
+  * **Default Scene Type is RGB:** If you use scene cycling without customizing scene settings, scenes will default to RGB color scenes, which might not be ideal for bulbs that don't support RGB color. 
   * **Disclaimer:** This software is provided "as is," without any warranties or guarantees of any kind, express or implied. Use at your own risk.
 
 Enjoy your enhanced Hue Dimmer experience with time-adaptive lighting and scene control\!
