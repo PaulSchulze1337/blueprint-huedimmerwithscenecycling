@@ -77,6 +77,12 @@ Once you've created an automation using this blueprint, here's how to control yo
   * **'Dim Down' Button (Press and Release / Hold):**
       * Decreases the brightness of the lights by 10%.
 
+## Special thanks to
+  * DefenestrateIT for the lights_on check code (https://community.home-assistant.io/t/wth-howto-reference-a-device-areas-state-on-off-unavailable-with-a-target-selector/484428/43)
+  * Blacky for the inspiration to use collapse in the input section
+  * Google for a LOT of free Gemini Flash 2 Thinking tokens
+
+
 ## ⚠️ Important Notes and Disclaimer
 
   * **Zigbee2MQTT Required:** This blueprint is designed to work with a Philips Hue Dimmer connected to Home Assistant via Zigbee2MQTT. Ensure your dimmer is properly paired and publishing MQTT messages.

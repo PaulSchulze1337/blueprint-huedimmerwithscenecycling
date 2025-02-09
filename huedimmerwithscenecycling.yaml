@@ -591,7 +591,7 @@ trigger:
     topic: !input mqtt_topic
 
 action:
-  - variables: # <---- Correct Indentation for `variables:`  (NEW BASELINE - CORRECTED INDENTATION)
+  - variables: 
       command_name: "{{ trigger.payload_json.action }}"
       target_lights: !input target_lights_input
 
@@ -604,7 +604,7 @@ action:
         - !input scene_6_type_selector
         - !input scene_7_type_selector
 
-      scene_color_array: # --- Keep RGB Color Array ---
+      scene_color_array: # --- RGB Color Array ---
         - !input scene_1_color
         - !input scene_2_color
         - !input scene_3_color
@@ -612,7 +612,7 @@ action:
         - !input scene_5_color
         - !input scene_6_color
         - !input scene_7_color
-      scene_color_temp_array: # --- Keep Color Temp Array ---
+      scene_color_temp_array: # --- Color Temp Array ---
         - !input scene_1_color_temp
         - !input scene_2_color_temp
         - !input scene_3_color_temp
@@ -628,7 +628,7 @@ action:
         - !input scene_5_brightness
         - !input scene_6_brightness
         - !input scene_7_brightness
-      scene_scene_array: # --- NEW: Home Assistant Scene Entity ID Array ---
+      scene_scene_array: # --- Scene Entity ID Array ---
         - !input scene_1_scene
         - !input scene_2_scene
         - !input scene_3_scene
@@ -666,8 +666,9 @@ action:
       next_scene_color: "{{ scene_color_array[next_scene_index - 1] }}"
       next_scene_color_temp: "{{ scene_color_temp_array[next_scene_index - 1] }}"
       next_scene_brightness: "{{ scene_brightness_array[next_scene_index - 1] }}"
-      next_scene_ha_scene: "{{ scene_scene_array[next_scene_index - 1] }}" # --- NEW: HA Scene Entity ID for scene ---
+      next_scene_ha_scene: "{{ scene_scene_array[next_scene_index - 1] }}" 
 
+      # check if any lights are on (based on https://community.home-assistant.io/t/wth-howto-reference-a-device-areas-state-on-off-unavailable-with-a-target-selector/484428/43)
       entities: >
         {%- set ns = namespace(ret=[]) %}
         {%- for key in ['device_id', 'area_id', 'entity_id'] %}
@@ -746,7 +747,7 @@ action:
               brightness_step_pct: -10
               transition: "{{ brightness_transition_time_var }}"
 
-      - conditions: # --- Scene Cycling Logic - REFACTORED - Separate conditions for scene types ---
+      - conditions: # --- Scene Cycling Logic  ---
           - condition: template
             value_template: "{{ command_name == 'off_press_release' }}"
         sequence:
@@ -776,7 +777,7 @@ action:
                       transition: "{{ transition_time_var }}"
                       color_temp_kelvin: "{{ next_scene_color_temp }}"
                       brightness_pct: "{{ next_scene_brightness }}"
-              - conditions: # --- NEW: Condition for Home Assistant Scenes ---
+              - conditions: # --- Condition for Home Assistant Scenes ---
                   - condition: template
                     value_template: "{{ scene_type_array[next_scene_index - 1] == 'scene' }}"
                 sequence:
