@@ -230,7 +230,7 @@ blueprint:
         scene_1_type_selector: # --- Scene Type Selector for Scene 1 ---
           name: Scene 1 Type
           description: Choose scene type for Scene 1 - RGB Color, Color Temperature (Kelvin), or Home Assistant Scene. Default is RGB Color.
-          default: rgb # --- Default to RGB for Scene 1 ---
+          default: rgb 
           selector:
             select:
               options:
@@ -239,7 +239,7 @@ blueprint:
                 - label: Color Temperature (Kelvin)
                   value: color_temp
                 - label: Home Assistant Scene
-                  value: scene # --- NEW Scene Type Option ---
+                  value: scene 
               mode: dropdown
         scene_1_color:
           name: Color of scene 1 (RGB)
