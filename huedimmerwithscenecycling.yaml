@@ -591,198 +591,207 @@ trigger:
     topic: !input mqtt_topic
 
 action:
-  - variables: 
-      command_name: "{{ trigger.payload_json.action }}"
-      target_lights: !input target_lights_input
-
-      scene_type_array: # --- Array for Scene Types ---
-        - !input scene_1_type_selector
-        - !input scene_2_type_selector
-        - !input scene_3_type_selector
-        - !input scene_4_type_selector
-        - !input scene_5_type_selector
-        - !input scene_6_type_selector
-        - !input scene_7_type_selector
-
-      scene_color_array: # --- RGB Color Array ---
-        - !input scene_1_color
-        - !input scene_2_color
-        - !input scene_3_color
-        - !input scene_4_color
-        - !input scene_5_color
-        - !input scene_6_color
-        - !input scene_7_color
-      scene_color_temp_array: # --- Color Temp Array ---
-        - !input scene_1_color_temp
-        - !input scene_2_color_temp
-        - !input scene_3_color_temp
-        - !input scene_4_color_temp
-        - !input scene_5_color_temp
-        - !input scene_6_color_temp
-        - !input scene_7_color_temp
-      scene_brightness_array: # --- Brightness Array ---
-        - !input scene_1_brightness
-        - !input scene_2_brightness
-        - !input scene_3_brightness
-        - !input scene_4_brightness
-        - !input scene_5_brightness
-        - !input scene_6_brightness
-        - !input scene_7_brightness
-      scene_scene_array: # --- Scene Entity ID Array ---
-        - !input scene_1_scene
-        - !input scene_2_scene
-        - !input scene_3_scene
-        - !input scene_4_scene
-        - !input scene_5_scene
-        - !input scene_6_scene
-        - !input scene_7_scene
-
-      transition_time_var: !input transition_time
-      brightness_transition_time_var: !input brightness_transition_time
-      current_time: "{{ now().strftime('%H:%M:%S') }}"
-      day_start: !input day_start_time
-      evening_start: !input evening_start_time
-      night_start: !input night_start_time
-      morning_start: !input morning_start_time
-
-      var_morning_color_temp: !input morning_color_temp
-      var_day_color_temp: !input day_color_temp
-      var_evening_color_temp: !input evening_color_temp
-      var_night_color_temp: !input night_color_temp
-      var_morning_brightness: !input morning_brightness
-      var_day_brightness: !input day_brightness
-      var_evening_brightness: !input evening_brightness
-      var_night_brightness: !input night_brightness
-
-      scene_index_entity_id: !input scene_index_input_text_entity_id
-      current_scene_index: "{{ states(scene_index_entity_id) | int(0) }}"
-      next_scene_index: >
-        {% set next_index = current_scene_index + 1 %}
-        {% if next_index > 7 %}
-          1
-        {% else %}
-          {{ next_index }}
-        {% endif %}
-      next_scene_color: "{{ scene_color_array[next_scene_index - 1] }}"
-      next_scene_color_temp: "{{ scene_color_temp_array[next_scene_index - 1] }}"
-      next_scene_brightness: "{{ scene_brightness_array[next_scene_index - 1] }}"
-      next_scene_ha_scene: "{{ scene_scene_array[next_scene_index - 1] }}" 
-
-      # check if any lights are on (based on https://community.home-assistant.io/t/wth-howto-reference-a-device-areas-state-on-off-unavailable-with-a-target-selector/484428/43)
-      entities: >
-        {%- set ns = namespace(ret=[]) %}
-        {%- for key in ['device_id', 'area_id', 'entity_id'] %}
-          {%- set items = target_lights.get(key, [])  %}
-          {%- if items %}
-            {%- set items = [ items ] if items is string else items %}
-            {%- set filt = key.split('_') | first %}
-            {%- set items = items if filt == 'entity' else items | map(filt ~ '_entities') | sum(start=[]) %}
-            {%- set ns.ret = ns.ret + [ items ] %}
-          {%- endif %}
-        {%- endfor %}
-        {{ ns.ret | sum(start=[]) }}
-      filtered: "{{ entities | select( 'search' , '^light' ) | select('is_state', 'on') | list }}"
-      lights_on: "{{ filtered | count > 0 }}"
-
-      adaptive_color_temp: >
-        {% if current_time >= morning_start and current_time < day_start %}
-          {{ var_morning_color_temp }}
-        {% elif current_time >= day_start and current_time < evening_start %}
-          {{ var_day_color_temp }}
-        {% elif current_time >= evening_start and current_time < night_start %}
-          {{ var_evening_color_temp }}
-        {% else %} {# Night or time past midnight #}
-          {{ var_night_color_temp }}
-        {% endif %}
-
-      adaptive_brightness_pct: >
-        {% if current_time >= morning_start and current_time < day_start %}
-          {{ var_morning_brightness }}
-        {% elif current_time >= day_start and current_time < evening_start %}
-          {{ var_day_brightness }}
-        {% elif current_time >= evening_start and current_time < night_start %}
-          {{ var_evening_brightness }}
-        {% else %} {# Night or time past midnight #}
-          {{ var_night_brightness }}
-        {% endif %}
-
-  - choose: # --- Dimmer Button Logic ---
-      - conditions:
+  - service: system_log.write
+    data:
+      message: "Received MQTT message: {{ trigger }}"
+      level: info # Or info/debug as needed
+  - choose:
+      - conditions: #ONLY CONTINUE IF ACTION IS SET TO AVOID ACCESSING EMPTY DICTS LATER ON
           - condition: template
-            value_template: "{{ command_name == 'on_press_release' and lights_on }}"
-        sequence:
-          - action: light.turn_off
-            target: "{{target_lights}}"
-            data:
-              transition: "{{ transition_time_var }}"
+            value_template: "{{ trigger.payload_json.action is defined}}" 
+        sequence: 
+        - variables: 
+            command_name: "{{ trigger.payload_json.action }}"
+            target_lights: !input target_lights_input
 
-      - conditions:
-          - condition: template
-            value_template: "{{ (command_name == 'on_press_release' and not(lights_on)) or command_name == 'on_hold' }}"
-        sequence:
-          - action: light.turn_on
-            target: "{{target_lights}}"
-            data:
-              transition: "{{ transition_time_var }}"
-              color_temp_kelvin: "{{ adaptive_color_temp }}"
-              brightness_pct: "{{ adaptive_brightness_pct }}"
+            scene_type_array: # --- Array for Scene Types ---
+              - !input scene_1_type_selector
+              - !input scene_2_type_selector
+              - !input scene_3_type_selector
+              - !input scene_4_type_selector
+              - !input scene_5_type_selector
+              - !input scene_6_type_selector
+              - !input scene_7_type_selector
 
-      - conditions:
-          - condition: template
-            value_template: "{{ command_name == 'up_press_release' or command_name == 'up_hold'}}"
-        sequence:
-          - action: light.turn_on
-            target: "{{target_lights}}"
-            data:
-              brightness_step_pct: +10
-              transition: "{{ brightness_transition_time_var }}"
+            scene_color_array: # --- RGB Color Array ---
+              - !input scene_1_color
+              - !input scene_2_color
+              - !input scene_3_color
+              - !input scene_4_color
+              - !input scene_5_color
+              - !input scene_6_color
+              - !input scene_7_color
+            scene_color_temp_array: # --- Color Temp Array ---
+              - !input scene_1_color_temp
+              - !input scene_2_color_temp
+              - !input scene_3_color_temp
+              - !input scene_4_color_temp
+              - !input scene_5_color_temp
+              - !input scene_6_color_temp
+              - !input scene_7_color_temp
+            scene_brightness_array: # --- Brightness Array ---
+              - !input scene_1_brightness
+              - !input scene_2_brightness
+              - !input scene_3_brightness
+              - !input scene_4_brightness
+              - !input scene_5_brightness
+              - !input scene_6_brightness
+              - !input scene_7_brightness
+            scene_scene_array: # --- Scene Entity ID Array ---
+              - !input scene_1_scene
+              - !input scene_2_scene
+              - !input scene_3_scene
+              - !input scene_4_scene
+              - !input scene_5_scene
+              - !input scene_6_scene
+              - !input scene_7_scene
 
-      - conditions:
-          - condition: template
-            value_template: "{{ command_name == 'down_press_release' or  command_name == 'down_hold'  }}"
-        sequence:
-          - action: light.turn_on
-            target: "{{target_lights}}"
-            data:
-              brightness_step_pct: -10
-              transition: "{{ brightness_transition_time_var }}"
+            transition_time_var: !input transition_time
+            brightness_transition_time_var: !input brightness_transition_time
+            current_time: "{{ now().strftime('%H:%M:%S') }}"
+            day_start: !input day_start_time
+            evening_start: !input evening_start_time
+            night_start: !input night_start_time
+            morning_start: !input morning_start_time
 
-      - conditions: # --- Scene Cycling Logic  ---
-          - condition: template
-            value_template: "{{ command_name == 'off_press_release' }}"
-        sequence:
-          - service: input_text.set_value # --- Update Input Text with next scene index ---
-            target:
-              entity_id: "{{ scene_index_entity_id }}"
-            data:
-              value: "{{ next_scene_index }}"
-          - choose: # --- Choose block for Scene Type branching  ---
-              - conditions: # --- Condition for RGB Scenes ---
-                  - condition: template
-                    value_template: "{{ scene_type_array[next_scene_index - 1] == 'rgb' }}"
-                sequence:
-                  - action: light.turn_on # --- Turn on lights with RGB scene ---
-                    target: "{{target_lights}}"
-                    data:
-                      transition: "{{ transition_time_var }}"
-                      rgb_color: "{{ next_scene_color }}"
-                      brightness_pct: "{{ next_scene_brightness }}"
-              - conditions: # --- Condition for Color Temperature Scenes ---
-                  - condition: template
-                    value_template: "{{ scene_type_array[next_scene_index - 1] == 'color_temp' }}"
-                sequence:
-                  - action: light.turn_on # --- Turn on lights with Color Temp scene ---
-                    target: "{{target_lights}}"
-                    data:
-                      transition: "{{ transition_time_var }}"
-                      color_temp_kelvin: "{{ next_scene_color_temp }}"
-                      brightness_pct: "{{ next_scene_brightness }}"
-              - conditions: # --- Condition for Home Assistant Scenes ---
-                  - condition: template
-                    value_template: "{{ scene_type_array[next_scene_index - 1] == 'scene' }}"
-                sequence:
-                  - action: scene.turn_on # --- Activate Home Assistant Scene ---
-                    target:
-                      entity_id: "{{ next_scene_ha_scene }}"
+            var_morning_color_temp: !input morning_color_temp
+            var_day_color_temp: !input day_color_temp
+            var_evening_color_temp: !input evening_color_temp
+            var_night_color_temp: !input night_color_temp
+            var_morning_brightness: !input morning_brightness
+            var_day_brightness: !input day_brightness
+            var_evening_brightness: !input evening_brightness
+            var_night_brightness: !input night_brightness
+
+            scene_index_entity_id: !input scene_index_input_text_entity_id
+            current_scene_index: "{{ states(scene_index_entity_id) | int(0) }}"
+            next_scene_index: >
+              {% set next_index = current_scene_index + 1 %}
+              {% if next_index > 7 %}
+                1
+              {% else %}
+                {{ next_index }}
+              {% endif %}
+            next_scene_color: "{{ scene_color_array[next_scene_index - 1] }}"
+            next_scene_color_temp: "{{ scene_color_temp_array[next_scene_index - 1] }}"
+            next_scene_brightness: "{{ scene_brightness_array[next_scene_index - 1] }}"
+            next_scene_ha_scene: "{{ scene_scene_array[next_scene_index - 1] }}" 
+
+            # check if any lights are on (based on https://community.home-assistant.io/t/wth-howto-reference-a-device-areas-state-on-off-unavailable-with-a-target-selector/484428/43)
+            entities: >
+              {%- set ns = namespace(ret=[]) %}
+              {%- for key in ['device_id', 'area_id', 'entity_id'] %}
+                {%- set items = target_lights.get(key, [])  %}
+                {%- if items %}
+                  {%- set items = [ items ] if items is string else items %}
+                  {%- set filt = key.split('_') | first %}
+                  {%- set items = items if filt == 'entity' else items | map(filt ~ '_entities') | sum(start=[]) %}
+                  {%- set ns.ret = ns.ret + [ items ] %}
+                {%- endif %}
+              {%- endfor %}
+              {{ ns.ret | sum(start=[]) }}
+            filtered: "{{ entities | select( 'search' , '^light' ) | select('is_state', 'on') | list }}"
+            lights_on: "{{ filtered | count > 0 }}"
+
+            adaptive_color_temp: >
+              {% if current_time >= morning_start and current_time < day_start %}
+                {{ var_morning_color_temp }}
+              {% elif current_time >= day_start and current_time < evening_start %}
+                {{ var_day_color_temp }}
+              {% elif current_time >= evening_start and current_time < night_start %}
+                {{ var_evening_color_temp }}
+              {% else %} {# Night or time past midnight #}
+                {{ var_night_color_temp }}
+              {% endif %}
+
+            adaptive_brightness_pct: >
+              {% if current_time >= morning_start and current_time < day_start %}
+                {{ var_morning_brightness }}
+              {% elif current_time >= day_start and current_time < evening_start %}
+                {{ var_day_brightness }}
+              {% elif current_time >= evening_start and current_time < night_start %}
+                {{ var_evening_brightness }}
+              {% else %} {# Night or time past midnight #}
+                {{ var_night_brightness }}
+              {% endif %}
+
+        - choose: # --- Dimmer Button Logic ---
+            - conditions:
+                - condition: template
+                  value_template: "{{ command_name == 'on_press_release' and lights_on }}"
+              sequence:
+                - action: light.turn_off
+                  target: "{{target_lights}}"
+                  data:
+                    transition: "{{ transition_time_var }}"
+
+            - conditions:
+                - condition: template
+                  value_template: "{{ (command_name == 'on_press_release' and not(lights_on)) or command_name == 'on_hold' }}"
+              sequence:
+                - action: light.turn_on
+                  target: "{{target_lights}}"
+                  data:
+                    transition: "{{ transition_time_var }}"
+                    color_temp_kelvin: "{{ adaptive_color_temp }}"
+                    brightness_pct: "{{ adaptive_brightness_pct }}"
+
+            - conditions:
+                - condition: template
+                  value_template: "{{ command_name == 'up_press_release' or command_name == 'up_hold'}}"
+              sequence:
+                - action: light.turn_on
+                  target: "{{target_lights}}"
+                  data:
+                    brightness_step_pct: +10
+                    transition: "{{ brightness_transition_time_var }}"
+
+            - conditions:
+                - condition: template
+                  value_template: "{{ command_name == 'down_press_release' or  command_name == 'down_hold'  }}"
+              sequence:
+                - action: light.turn_on
+                  target: "{{target_lights}}"
+                  data:
+                    brightness_step_pct: -10
+                    transition: "{{ brightness_transition_time_var }}"
+
+            - conditions: # --- Scene Cycling Logic  ---
+                - condition: template
+                  value_template: "{{ command_name == 'off_press_release' }}"
+              sequence:
+                - service: input_text.set_value # --- Update Input Text with next scene index ---
+                  target:
+                    entity_id: "{{ scene_index_entity_id }}"
+                  data:
+                    value: "{{ next_scene_index }}"
+                - choose: # --- Choose block for Scene Type branching  ---
+                    - conditions: # --- Condition for RGB Scenes ---
+                        - condition: template
+                          value_template: "{{ scene_type_array[next_scene_index - 1] == 'rgb' }}"
+                      sequence:
+                        - action: light.turn_on # --- Turn on lights with RGB scene ---
+                          target: "{{target_lights}}"
+                          data:
+                            transition: "{{ transition_time_var }}"
+                            rgb_color: "{{ next_scene_color }}"
+                            brightness_pct: "{{ next_scene_brightness }}"
+                    - conditions: # --- Condition for Color Temperature Scenes ---
+                        - condition: template
+                          value_template: "{{ scene_type_array[next_scene_index - 1] == 'color_temp' }}"
+                      sequence:
+                        - action: light.turn_on # --- Turn on lights with Color Temp scene ---
+                          target: "{{target_lights}}"
+                          data:
+                            transition: "{{ transition_time_var }}"
+                            color_temp_kelvin: "{{ next_scene_color_temp }}"
+                            brightness_pct: "{{ next_scene_brightness }}"
+                    - conditions: # --- Condition for Home Assistant Scenes ---
+                        - condition: template
+                          value_template: "{{ scene_type_array[next_scene_index - 1] == 'scene' }}"
+                      sequence:
+                        - action: scene.turn_on # --- Activate Home Assistant Scene ---
+                          target:
+                            entity_id: "{{ next_scene_ha_scene }}"
 
 mode: queued
