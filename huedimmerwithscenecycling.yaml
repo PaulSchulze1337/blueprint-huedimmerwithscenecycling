@@ -6,25 +6,26 @@ blueprint:
   name: Time-Adaptive Hue Dimmer with Scene Cycling, Per-Scene Type, and HA Scenes
   description: >
     Control lights with the Hue dimmer, with **time-based adaptive color temperature and brightness** *integrated* into the 'on' action. If lights do not turn on, try holding on to override the detection logic<br/>
-    Scene type is selectable *per individual scene* with "Home Assistant Scene", alongside RGB Color and Color Temperature (Kelvin) as options. <br/><br/>
-
+    Scene type is selectable *per individual scene* with "Home Assistant Scene", alongside RGB Color and Color Temperature (Kelvin) as options. You can even mixed them. If you have less then 7 scenes, you can skip follow up scenes.<br/><br/>
 
     **✨ Features: ✨**
     <ul>
-    <li>**Hue Dimmer Control:** Implements on, off, increase and dim brightness with minimal configuration - scene cycling requires a helper, sadly.</li>
-    <li>**Time-Integrated Adaptive Lighting:** Time-of-day color temperature and brightness are applied *when lights are turned ON* via the dimmer if they were off. Brightness adjustments maintain the current color temperature.</li>
-    <li>**Versatile Customizable Scenes (Per-Scene Type Selection):** Define up to 7 lighting scenes with custom **RGB colors**, **color temperature (Kelvin)**, *or* **activate pre-defined Home Assistant Scenes**. **Choose between RB Color, Color Temperature, or Home Assistant Scene *for each scene individually*.**</li>
-    <li>**Scene Cycling:** Cycle through the defined scenes using the **'Off' button (short press)** on the Hue dimmer. The first press after automation start will activate scene 1, subsequent presses will cycle through scene 2, scene 3, ..., scene 7, and back to scene 1.  **Scene index is tracked using an `input_text` helper.**</li>
-    <li>**Simplified Time Settings:** Only start times are needed for each adaptive lighting period (Morning, Day, Evening, Night).</li>
-    <li>**Smooth Transitions:** Option for smooth transitions for dimmer button actions and initial adaptive lighting setting. **Separate, shorter transition time for brightness adjustments.**</li>
+      <li>**Hue Dimmer Control:** Implements on, off, increase and dim brightness with minimal configuration - scene cycling requires a helper, sadly.</li>
+      <li>**Time-Integrated Adaptive Lighting:** Time-of-day color temperature and brightness are applied *when lights are turned ON* via the dimmer if they were off. Brightness adjustments maintain the current color temperature.</li>
+      <li>**Versatile Customizable Scenes (Per-Scene Type Selection):** Define up to 7 lighting scenes with custom **RGB colors**, **color temperature (Kelvin)**, *or* **activate pre-defined Home Assistant Scenes**. Mixing them is also possible. **Choose between RGB Color, Color Temperature, or Home Assistant Scene *for each scene individually*.**</li>
+      <li>**Scene Cycling:** Cycle through the defined scenes using the **'Off' button** or **'hue' button** (both short press) on the Hue dimmer. The first press after automation start will activate scene 1, subsequent presses will cycle through scene 2, scene 3, ..., scene 7, and back to scene 1. Switching the light off using the **'Off' button** or **'hue' button** (both short press) will reset the scene index, so the next press will activate always scene 1. If you want to use less than 7 scenes, you can select "None" for  the follow up scene. All scenes after a "None" scene will be skipped. E.g. if you select "None" for scene 4, the scene cycling will go from scene 1, ..., scene 3, and back to scene 1. **Scene index is tracked using an `input_text` helper.**</li>
+      <li>**Simplified Time Settings:** Only start times are needed for each adaptive lighting period (Morning, Day, Evening, Night).</li>
+      <li>**Smooth Transitions:** Option for smooth transitions for dimmer button actions and initial adaptive lighting setting. **Separate, shorter transition time for brightness adjustments.**</li>
     </ul>
-    **✨ Setup: ✨** <br/>
-    Minimally you need to set up the first three fields:
+    
+      **✨ Setup: ✨** <br/>
+      Minimally you need to set up the first three fields:
     <ul>
-    <li>MQTT Topic</li>
-    <li>Lights to be acted upon (entities preferred, but devices and areas should work too) </li>
-    <li> Scene Index Input Text Entity ID</li>
+      <li>MQTT Topic</li>
+      <li>Lights to be acted upon (entities preferred, but devices and areas should work too) </li>
+      <li> Scene Index Input Text Entity ID</li>
     </ul>
+    
     Remainder can run with defaults but the scene cycling may be a bit underwhelming (and defaults to RGB which may be an issue for non RGB bulbs).
 
   domain: automation
@@ -39,7 +40,7 @@ blueprint:
     target_lights_input:
       name: Lights to be acted upon (mandatory)
       description: The lights that the dimmer will control and for adaptive lighting.
-      default: []
+      default: [ ]
       selector:
         target:
           entity:
@@ -68,6 +69,7 @@ blueprint:
         entity:
           domain: input_text
 
+    # User-defined inputs for transition times
     transition_time:
       name: Transition time (seconds) - On/Off and Initial State
       description: Transition time for turning lights ON/OFF and for applying initial adaptive lighting color/brightness when turning on.
@@ -80,6 +82,7 @@ blueprint:
           unit_of_measurement: seconds
           step: 1
 
+    # User-defined inputs for brightness transition time
     brightness_transition_time:
       name: Brightness Transition time (seconds) - Brightness Adjustments
       description: Transition time specifically for brightness adjustments (up/down button presses/holds). Should typically be shorter for responsiveness.
@@ -91,6 +94,7 @@ blueprint:
           max: 300
           unit_of_measurement: seconds
           step: 1
+
     # --- Adaptive Lighting Settings ---
     adaptive_lighting_settings:
       name: Adaptive Lighting Settings (time periods, color temperature, brightness)
@@ -102,7 +106,7 @@ blueprint:
           description: Time when morning lighting should begin and night lighting ends.
           default: "06:00:00"
           selector:
-            time: {}
+            time: { }
 
         morning_color_temp:
           name: Morning Color Temperature (Kelvin)
@@ -133,7 +137,7 @@ blueprint:
           description: Time when day lighting should begin and morning lighting ends.
           default: "09:00:00"
           selector:
-            time: {}
+            time: { }
 
         day_color_temp:
           name: Day Color Temperature (Kelvin)
@@ -164,7 +168,7 @@ blueprint:
           description: Time when evening lighting should begin and day lighting ends.
           default: "17:00:00"
           selector:
-            time: {}
+            time: { }
 
         evening_color_temp:
           name: Evening Color Temperature (Kelvin)
@@ -195,7 +199,7 @@ blueprint:
           description: Time when night lighting should begin and evening lighting ends (can be past midnight).
           default: "22:00:00"
           selector:
-            time: {}
+            time: { }
 
         night_color_temp:
           name: Night Color Temperature (Kelvin)
@@ -212,7 +216,7 @@ blueprint:
         night_brightness:
           name: Night Brightness (Percentage)
           description: Brightness percentage for nighttime.
-          default: 40 
+          default: 40
           selector:
             number:
               mode: slider
@@ -229,8 +233,8 @@ blueprint:
       input:
         scene_1_type_selector: # --- Scene Type Selector for Scene 1 ---
           name: Scene 1 Type
-          description: Choose scene type for Scene 1 - RGB Color, Color Temperature (Kelvin), or Home Assistant Scene. Default is RGB Color.
-          default: rgb 
+          description: Choose scene type for Scene 1 - RGB Color, Color Temperature (Kelvin), or Home Assistant Scene. Selecting 'None' will skip this and all following scenes. Default is RGB Color.
+          default: rgb
           selector:
             select:
               options:
@@ -239,12 +243,14 @@ blueprint:
                 - label: Color Temperature (Kelvin)
                   value: color_temp
                 - label: Home Assistant Scene
-                  value: scene 
+                  value: scene
+                - label: None
+                  value: none
               mode: dropdown
         scene_1_color:
           name: Color of scene 1 (RGB)
           description: Which color for scene 1 (RGB) - will be used if Scene 1 Type is set to RGB Color.
-          default: [255, 255, 255]
+          default: [ 255, 255, 255 ]
           selector:
             color_rgb:
         scene_1_brightness:
@@ -266,7 +272,7 @@ blueprint:
               max: 6500
               unit_of_measurement: K
               step: 100
-        scene_1_scene: 
+        scene_1_scene:
           name: Home Assistant Scene for scene 1
           description: Select a Home Assistant scene to activate for Scene 1 - will be used if Scene 1 Type is set to Home Assistant Scene.
           default: ""
@@ -279,10 +285,10 @@ blueprint:
       icon: mdi:palette
       collapsed: true
       input:
-        scene_2_type_selector: 
+        scene_2_type_selector:
           name: Scene 2 Type
-          description: Choose scene type for Scene 2 - RGB Color, Color Temperature (Kelvin), or Home Assistant Scene. Default is RGB Color.
-          default: rgb 
+          description: Choose scene type for Scene 2 - RGB Color, Color Temperature (Kelvin), or Home Assistant Scene. Selecting 'None' will skip this and all following scenes. Default is RGB Color.
+          default: rgb
           selector:
             select:
               options:
@@ -291,18 +297,20 @@ blueprint:
                 - label: Color Temperature (Kelvin)
                   value: color_temp
                 - label: Home Assistant Scene
-                  value: scene 
+                  value: scene
+                - label: None
+                  value: none
               mode: dropdown
         scene_2_color:
           name: Color of scene 2 (RGB)
           description: Which color for scene 2 (RGB) - will be used if Scene 2 Type is set to RGB Color.
-          default: [255, 0, 0]
+          default: [ 255, 0, 0 ]
           selector:
             color_rgb:
         scene_2_brightness:
           name: Brightness of scene 2
           description: Which brightness for scene 2 (%) - *only used if Scene 2 Type is RGB Color or Color Temperature*.
-          default: 80 
+          default: 80
           selector:
             number:
               min: 1
@@ -318,7 +326,7 @@ blueprint:
               max: 6500
               unit_of_measurement: K
               step: 100
-        scene_2_scene: 
+        scene_2_scene:
           name: Home Assistant Scene for scene 2
           description: Select a Home Assistant scene to activate for Scene 2 - will be used if Scene 2 Type is set to Home Assistant Scene.
           default: ""
@@ -331,10 +339,10 @@ blueprint:
       icon: mdi:palette
       collapsed: true
       input:
-        scene_3_type_selector: 
+        scene_3_type_selector:
           name: Scene 3 Type
-          description: Choose scene type for Scene 3 - RGB Color, Color Temperature (Kelvin), or Home Assistant Scene. Default is RGB Color.
-          default: rgb 
+          description: Choose scene type for Scene 3 - RGB Color, Color Temperature (Kelvin), or Home Assistant Scene. Selecting 'None' will skip this and all following scenes. Default is RGB Color.
+          default: rgb
           selector:
             select:
               options:
@@ -343,18 +351,20 @@ blueprint:
                 - label: Color Temperature (Kelvin)
                   value: color_temp
                 - label: Home Assistant Scene
-                  value: scene 
+                  value: scene
+                - label: None
+                  value: none
               mode: dropdown
         scene_3_color:
           name: Color of scene 3 (RGB)
           description: Which color for scene 3 (RGB) - will be used if Scene 3 Type is set to RGB Color.
-          default: [0, 255, 0]
+          default: [ 0, 255, 0 ]
           selector:
             color_rgb:
         scene_3_brightness:
           name: Brightness of scene 3
           description: Which brightness for scene 3 (%) - *only used if Scene 3 Type is RGB Color or Color Temperature*.
-          default: 80 
+          default: 80
           selector:
             number:
               min: 1
@@ -370,7 +380,7 @@ blueprint:
               max: 6500
               unit_of_measurement: K
               step: 100
-        scene_3_scene: 
+        scene_3_scene:
           name: Home Assistant Scene for scene 3
           description: Select a Home Assistant scene to activate for Scene 3 - will be used if Scene 3 Type is set to Home Assistant Scene.
           default: ""
@@ -385,8 +395,8 @@ blueprint:
       input:
         scene_4_type_selector:
           name: Scene 4 Type
-          description: Choose scene type for Scene 4 - RGB Color, Color Temperature (Kelvin), or Home Assistant Scene. Default is RGB Color.
-          default: rgb 
+          description: Choose scene type for Scene 4 - RGB Color, Color Temperature (Kelvin), or Home Assistant Scene. Selecting 'None' will skip this and all following scenes. Default is RGB Color.
+          default: rgb
           selector:
             select:
               options:
@@ -395,18 +405,20 @@ blueprint:
                 - label: Color Temperature (Kelvin)
                   value: color_temp
                 - label: Home Assistant Scene
-                  value: scene 
+                  value: scene
+                - label: None
+                  value: none
               mode: dropdown
         scene_4_color:
           name: Color of scene 4 (RGB)
           description: Which color for scene 4 (RGB) - will be used if Scene 4 Type is set to RGB Color.
-          default: [0, 0, 255]
+          default: [ 0, 0, 255 ]
           selector:
             color_rgb:
         scene_4_brightness:
           name: Brightness of scene 4
           description: Which brightness for scene 4 (%) - *only used if Scene 4 Type is RGB Color or Color Temperature*.
-          default: 80 
+          default: 80
           selector:
             number:
               min: 1
@@ -422,7 +434,7 @@ blueprint:
               max: 6500
               unit_of_measurement: K
               step: 100
-        scene_4_scene: 
+        scene_4_scene:
           name: Home Assistant Scene for scene 4
           description: Select a Home Assistant scene to activate for Scene 4 - will be used if Scene 4 Type is set to Home Assistant Scene.
           default: ""
@@ -435,10 +447,10 @@ blueprint:
       icon: mdi:palette
       collapsed: true
       input:
-        scene_5_type_selector: 
+        scene_5_type_selector:
           name: Scene 5 Type
-          description: Choose scene type for Scene 5 - RGB Color, Color Temperature (Kelvin), or Home Assistant Scene. Default is RGB Color.
-          default: rgb 
+          description: Choose scene type for Scene 5 - RGB Color, Color Temperature (Kelvin), or Home Assistant Scene. Selecting 'None' will skip this and all following scenes. Default is RGB Color.
+          default: rgb
           selector:
             select:
               options:
@@ -447,18 +459,20 @@ blueprint:
                 - label: Color Temperature (Kelvin)
                   value: color_temp
                 - label: Home Assistant Scene
-                  value: scene 
+                  value: scene
+                - label: None
+                  value: none
               mode: dropdown
         scene_5_color:
           name: Color of scene 5 (RGB)
           description: Which color for scene 5 (RGB) - will be used if Scene 5 Type is set to RGB Color.
-          default: [255, 80, 80]
+          default: [ 255, 80, 80 ]
           selector:
             color_rgb:
         scene_5_brightness:
           name: Brightness of scene 5
           description: Which brightness for scene 5 (%) - *only used if Scene 5 Type is RGB Color or Color Temperature*.
-          default: 80 
+          default: 80
           selector:
             number:
               min: 1
@@ -474,7 +488,7 @@ blueprint:
               max: 6500
               unit_of_measurement: K
               step: 100
-        scene_5_scene: 
+        scene_5_scene:
           name: Home Assistant Scene for scene 5
           description: Select a Home Assistant scene to activate for Scene 5 - will be used if Scene 5 Type is set to Home Assistant Scene.
           default: ""
@@ -487,10 +501,10 @@ blueprint:
       icon: mdi:palette
       collapsed: true
       input:
-        scene_6_type_selector: 
+        scene_6_type_selector:
           name: Scene 6 Type
-          description: Choose scene type for Scene 6 - RGB Color, Color Temperature (Kelvin), or Home Assistant Scene. Default is RGB Color.
-          default: rgb 
+          description: Choose scene type for Scene 6 - RGB Color, Color Temperature (Kelvin), or Home Assistant Scene. Selecting 'None' will skip this and all following scenes. Default is RGB Color.
+          default: rgb
           selector:
             select:
               options:
@@ -499,18 +513,20 @@ blueprint:
                 - label: Color Temperature (Kelvin)
                   value: color_temp
                 - label: Home Assistant Scene
-                  value: scene 
+                  value: scene
+                - label: None
+                  value: none
               mode: dropdown
         scene_6_color:
           name: Color of scene 6 (RGB)
           description: Which color for scene 6 (RGB) - will be used if Scene 6 Type is set to RGB Color.
-          default: [80, 80, 255]
+          default: [ 80, 80, 255 ]
           selector:
             color_rgb:
         scene_6_brightness:
           name: Brightness of scene 6
           description: Which brightness for scene 6 (%) - *only used if Scene 6 Type is RGB Color or Color Temperature*.
-          default: 80 
+          default: 80
           selector:
             number:
               min: 1
@@ -526,7 +542,7 @@ blueprint:
               max: 6500
               unit_of_measurement: K
               step: 100
-        scene_6_scene: 
+        scene_6_scene:
           name: Home Assistant Scene for scene 6
           description: Select a Home Assistant scene to activate for Scene 6 - will be used if Scene 6 Type is set to Home Assistant Scene.
           default: ""
@@ -539,10 +555,10 @@ blueprint:
       icon: mdi:palette
       collapsed: true
       input:
-        scene_7_type_selector: 
+        scene_7_type_selector:
           name: Scene 7 Type
-          description: Choose scene type for Scene 7 - RGB Color, Color Temperature (Kelvin), or Home Assistant Scene. Default is RGB Color.
-          default: rgb 
+          description: Choose scene type for Scene 7 - RGB Color, Color Temperature (Kelvin), or Home Assistant Scene. Selecting 'None' will skip this and all following scenes. Default is RGB Color.
+          default: rgb
           selector:
             select:
               options:
@@ -551,18 +567,20 @@ blueprint:
                 - label: Color Temperature (Kelvin)
                   value: color_temp
                 - label: Home Assistant Scene
-                  value: scene 
+                  value: scene
+                - label: None
+                  value: none
               mode: dropdown
         scene_7_color:
           name: Color of scene 7 (RGB)
           description: Which color for scene 7 (RGB) - will be used if Scene 7 Type is set to RGB Color.
-          default: [80, 80, 255]
+          default: [ 80, 80, 255 ]
           selector:
             color_rgb:
         scene_7_brightness:
           name: Brightness of scene 7
           description: Which brightness for scene 7 (%) - *only used if Scene 7 Type is RGB Color or Color Temperature*.
-          default: 80 
+          default: 80
           selector:
             number:
               min: 1
@@ -578,7 +596,7 @@ blueprint:
               max: 6500
               unit_of_measurement: K
               step: 100
-        scene_7_scene: 
+        scene_7_scene:
           name: Home Assistant Scene for scene 7
           description: Select a Home Assistant scene to activate for Scene 7 - will be used if Scene 7 Type is set to Home Assistant Scene.
           default: ""
@@ -586,208 +604,280 @@ blueprint:
             entity:
               domain: scene
 
+
 trigger:
+  # --- Trigger on MQTT message from the Hue Dimmer ---
   - platform: mqtt
     topic: !input mqtt_topic
 
 action:
   - choose:
-      - conditions: #ONLY CONTINUE IF ACTION IS SET TO AVOID ACCESSING EMPTY DICTS LATER ON
+      # Continue only if an 'action' is defined in the payload. This is to avoid accessing empty dictionaries later on.
+      - conditions:
           - condition: template
-            value_template: "{{ trigger.payload_json.action is defined}}" 
-        sequence: 
-        - variables: 
-            command_name: "{{ trigger.payload_json.action }}"
-            target_lights: !input target_lights_input
+            value_template: "{{ trigger.payload_json.action is defined}}"
+        sequence:
+          - variables:
+              command_name: "{{ trigger.payload_json.action }}"
+              target_lights: !input target_lights_input
 
-            scene_type_array: # --- Array for Scene Types ---
-              - !input scene_1_type_selector
-              - !input scene_2_type_selector
-              - !input scene_3_type_selector
-              - !input scene_4_type_selector
-              - !input scene_5_type_selector
-              - !input scene_6_type_selector
-              - !input scene_7_type_selector
+              # Get User-defined inputs for the type of scene (RGB, Color Temperature, Home Assistant Scene or None) from the input section
+              scene_type_array: # --- Array for Scene Types ---
+                - !input scene_1_type_selector
+                - !input scene_2_type_selector
+                - !input scene_3_type_selector
+                - !input scene_4_type_selector
+                - !input scene_5_type_selector
+                - !input scene_6_type_selector
+                - !input scene_7_type_selector
 
-            scene_color_array: # --- RGB Color Array ---
-              - !input scene_1_color
-              - !input scene_2_color
-              - !input scene_3_color
-              - !input scene_4_color
-              - !input scene_5_color
-              - !input scene_6_color
-              - !input scene_7_color
-            scene_color_temp_array: # --- Color Temp Array ---
-              - !input scene_1_color_temp
-              - !input scene_2_color_temp
-              - !input scene_3_color_temp
-              - !input scene_4_color_temp
-              - !input scene_5_color_temp
-              - !input scene_6_color_temp
-              - !input scene_7_color_temp
-            scene_brightness_array: # --- Brightness Array ---
-              - !input scene_1_brightness
-              - !input scene_2_brightness
-              - !input scene_3_brightness
-              - !input scene_4_brightness
-              - !input scene_5_brightness
-              - !input scene_6_brightness
-              - !input scene_7_brightness
-            scene_scene_array: # --- Scene Entity ID Array ---
-              - !input scene_1_scene
-              - !input scene_2_scene
-              - !input scene_3_scene
-              - !input scene_4_scene
-              - !input scene_5_scene
-              - !input scene_6_scene
-              - !input scene_7_scene
+              # Get User-defined inputs for RGB colors (scene_1_settings, scene_2_settings, etc.) from the input section
+              scene_color_array: # --- RGB Color Array ---
+                - !input scene_1_color
+                - !input scene_2_color
+                - !input scene_3_color
+                - !input scene_4_color
+                - !input scene_5_color
+                - !input scene_6_color
+                - !input scene_7_color
 
-            transition_time_var: !input transition_time
-            brightness_transition_time_var: !input brightness_transition_time
-            current_time: "{{ now().strftime('%H:%M:%S') }}"
-            day_start: !input day_start_time
-            evening_start: !input evening_start_time
-            night_start: !input night_start_time
-            morning_start: !input morning_start_time
+              # Get User-defined inputs for color temperatures (scene_1_settings, scene_2_settings, etc.) from the input section
+              scene_color_temp_array:
+                - !input scene_1_color_temp
+                - !input scene_2_color_temp
+                - !input scene_3_color_temp
+                - !input scene_4_color_temp
+                - !input scene_5_color_temp
+                - !input scene_6_color_temp
+                - !input scene_7_color_temp
 
-            var_morning_color_temp: !input morning_color_temp
-            var_day_color_temp: !input day_color_temp
-            var_evening_color_temp: !input evening_color_temp
-            var_night_color_temp: !input night_color_temp
-            var_morning_brightness: !input morning_brightness
-            var_day_brightness: !input day_brightness
-            var_evening_brightness: !input evening_brightness
-            var_night_brightness: !input night_brightness
+              # Get User-defined inputs for brightness levels (scene_1_settings, scene_2_settings, etc.) from the input section
+              scene_brightness_array: # --- Brightness Array ---
+                - !input scene_1_brightness
+                - !input scene_2_brightness
+                - !input scene_3_brightness
+                - !input scene_4_brightness
+                - !input scene_5_brightness
+                - !input scene_6_brightness
+                - !input scene_7_brightness
 
-            scene_index_entity_id: !input scene_index_input_text_entity_id
-            current_scene_index: "{{ states(scene_index_entity_id) | int(0) }}"
-            next_scene_index: >
-              {% set next_index = current_scene_index + 1 %}
-              {% if next_index > 7 %}
-                1
-              {% else %}
-                {{ next_index }}
-              {% endif %}
-            next_scene_color: "{{ scene_color_array[next_scene_index - 1] }}"
-            next_scene_color_temp: "{{ scene_color_temp_array[next_scene_index - 1] }}"
-            next_scene_brightness: "{{ scene_brightness_array[next_scene_index - 1] }}"
-            next_scene_ha_scene: "{{ scene_scene_array[next_scene_index - 1] }}" 
+              # Get User-defined inputs for Home Assistant scenes (scene_1_settings, scene_2_settings, etc.) from the input section
+              scene_scene_array: # --- Scene Entity ID Array ---
+                - !input scene_1_scene
+                - !input scene_2_scene
+                - !input scene_3_scene
+                - !input scene_4_scene
+                - !input scene_5_scene
+                - !input scene_6_scene
+                - !input scene_7_scene
 
-            # check if any lights are on (based on https://community.home-assistant.io/t/wth-howto-reference-a-device-areas-state-on-off-unavailable-with-a-target-selector/484428/43)
-            entities: >
-              {%- set ns = namespace(ret=[]) %}
-              {%- for key in ['device_id', 'area_id', 'entity_id'] %}
-                {%- set items = target_lights.get(key, [])  %}
-                {%- if items %}
-                  {%- set items = [ items ] if items is string else items %}
-                  {%- set filt = key.split('_') | first %}
-                  {%- set items = items if filt == 'entity' else items | map(filt ~ '_entities') | sum(start=[]) %}
-                  {%- set ns.ret = ns.ret + [ items ] %}
-                {%- endif %}
-              {%- endfor %}
-              {{ ns.ret | sum(start=[]) }}
-            filtered: "{{ entities | select( 'search' , '^light' ) | select('is_state', 'on') | list }}"
-            lights_on: "{{ filtered | count > 0 }}"
 
-            adaptive_color_temp: >
-              {% if current_time >= morning_start and current_time < day_start %}
-                {{ var_morning_color_temp }}
-              {% elif current_time >= day_start and current_time < evening_start %}
-                {{ var_day_color_temp }}
-              {% elif current_time >= evening_start and current_time < night_start %}
-                {{ var_evening_color_temp }}
-              {% else %} {# Night or time past midnight #}
-                {{ var_night_color_temp }}
-              {% endif %}
+              # Get User-defined inputs for transition times from the input section
+              transition_time_var: !input transition_time
+              brightness_transition_time_var: !input brightness_transition_time
 
-            adaptive_brightness_pct: >
-              {% if current_time >= morning_start and current_time < day_start %}
-                {{ var_morning_brightness }}
-              {% elif current_time >= day_start and current_time < evening_start %}
-                {{ var_day_brightness }}
-              {% elif current_time >= evening_start and current_time < night_start %}
-                {{ var_evening_brightness }}
-              {% else %} {# Night or time past midnight #}
-                {{ var_night_brightness }}
-              {% endif %}
 
-        - choose: # --- Dimmer Button Logic ---
-            - conditions:
-                - condition: template
-                  value_template: "{{ command_name == 'on_press_release' and lights_on }}"
-              sequence:
-                - action: light.turn_off
-                  target: "{{target_lights}}"
-                  data:
-                    transition: "{{ transition_time_var }}"
+              # Check if there is any light on?
+              # Based on https://community.home-assistant.io/t/wth-howto-reference-a-device-areas-state-on-off-unavailable-with-a-target-selector/484428/43
+              entities: >
+                {%- set ns = namespace(ret=[]) %}
+                {%- for key in ['device_id', 'area_id', 'entity_id'] %}
+                  {%- set items = target_lights.get(key, [])  %}
+                  {%- if items %}
+                    {%- set items = [ items ] if items is string else items %}
+                    {%- set filt = key.split('_') | first %}
+                    {%- set items = items if filt == 'entity' else items | map(filt ~ '_entities') | sum(start=[]) %}
+                    {%- set ns.ret = ns.ret + [ items ] %}
+                  {%- endif %}
+                {%- endfor %}
+                {{ ns.ret | sum(start=[]) }}
+              filtered: "{{ entities | select( 'search' , '^light' ) | select('is_state', 'on') | list }}"
+              lights_on: "{{ filtered | count > 0 }}"
 
-            - conditions:
-                - condition: template
-                  value_template: "{{ (command_name == 'on_press_release' and not(lights_on)) or command_name == 'on_hold' }}"
-              sequence:
-                - action: light.turn_on
-                  target: "{{target_lights}}"
-                  data:
-                    transition: "{{ transition_time_var }}"
-                    color_temp_kelvin: "{{ adaptive_color_temp }}"
-                    brightness_pct: "{{ adaptive_brightness_pct }}"
+              # Get User-defined inputs for adaptive lighting settings from the input section
+              day_start: !input day_start_time
+              evening_start: !input evening_start_time
+              night_start: !input night_start_time
+              morning_start: !input morning_start_time
+              var_morning_color_temp: !input morning_color_temp
+              var_day_color_temp: !input day_color_temp
+              var_evening_color_temp: !input evening_color_temp
+              var_night_color_temp: !input night_color_temp
+              var_morning_brightness: !input morning_brightness
+              var_day_brightness: !input day_brightness
+              var_evening_brightness: !input evening_brightness
+              var_night_brightness: !input night_brightness
 
-            - conditions:
-                - condition: template
-                  value_template: "{{ command_name == 'up_press_release' or command_name == 'up_hold'}}"
-              sequence:
-                - action: light.turn_on
-                  target: "{{target_lights}}"
-                  data:
-                    brightness_step_pct: +10
-                    transition: "{{ brightness_transition_time_var }}"
+              current_time: "{{ now().strftime('%H:%M:%S') }}"
 
-            - conditions:
-                - condition: template
-                  value_template: "{{ command_name == 'down_press_release' or  command_name == 'down_hold'  }}"
-              sequence:
-                - action: light.turn_on
-                  target: "{{target_lights}}"
-                  data:
-                    brightness_step_pct: -10
-                    transition: "{{ brightness_transition_time_var }}"
 
-            - conditions: # --- Scene Cycling Logic  ---
-                - condition: template
-                  value_template: "{{ command_name == 'off_press_release' }}"
-              sequence:
-                - service: input_text.set_value # --- Update Input Text with next scene index ---
-                  target:
-                    entity_id: "{{ scene_index_entity_id }}"
-                  data:
-                    value: "{{ next_scene_index }}"
-                - choose: # --- Choose block for Scene Type branching  ---
-                    - conditions: # --- Condition for RGB Scenes ---
-                        - condition: template
-                          value_template: "{{ scene_type_array[next_scene_index - 1] == 'rgb' }}"
-                      sequence:
-                        - action: light.turn_on # --- Turn on lights with RGB scene ---
-                          target: "{{target_lights}}"
-                          data:
-                            transition: "{{ transition_time_var }}"
-                            rgb_color: "{{ next_scene_color }}"
-                            brightness_pct: "{{ next_scene_brightness }}"
-                    - conditions: # --- Condition for Color Temperature Scenes ---
-                        - condition: template
-                          value_template: "{{ scene_type_array[next_scene_index - 1] == 'color_temp' }}"
-                      sequence:
-                        - action: light.turn_on # --- Turn on lights with Color Temp scene ---
-                          target: "{{target_lights}}"
-                          data:
-                            transition: "{{ transition_time_var }}"
-                            color_temp_kelvin: "{{ next_scene_color_temp }}"
-                            brightness_pct: "{{ next_scene_brightness }}"
-                    - conditions: # --- Condition for Home Assistant Scenes ---
-                        - condition: template
-                          value_template: "{{ scene_type_array[next_scene_index - 1] == 'scene' }}"
-                      sequence:
-                        - action: scene.turn_on # --- Activate Home Assistant Scene ---
-                          target:
-                            entity_id: "{{ next_scene_ha_scene }}"
+              # Set the adaptive lighting color temperature and brightness based on the current time
+              # and pre-defined time periods (morning, day, evening, night).
+              adaptive_color_temp: >
+                {% if current_time >= morning_start and current_time < day_start %}
+                  {{ var_morning_color_temp }}
+                {% elif current_time >= day_start and current_time < evening_start %}
+                  {{ var_day_color_temp }}
+                {% elif current_time >= evening_start and current_time < night_start %}
+                  {{ var_evening_color_temp }}
+                {% else %} {# Night or time past midnight #}
+                  {{ var_night_color_temp }}
+                {% endif %}
+              # Set the adaptive brightness percentage based on the current time
+              # and pre-defined time periods (morning, day, evening, night).
+              adaptive_brightness_pct: >
+                {% if current_time >= morning_start and current_time < day_start %}
+                  {{ var_morning_brightness }}
+                {% elif current_time >= day_start and current_time < evening_start %}
+                  {{ var_day_brightness }}
+                {% elif current_time >= evening_start and current_time < night_start %}
+                  {{ var_evening_brightness }}
+                {% else %} {# Night or time past midnight #}
+                  {{ var_night_brightness }}
+                {% endif %}
+              
+
+              # --- Scene Index Tracking ---
+              # Get the current scene index from the input text entity and covert it to an integer.
+              # The stored value in the current scene index has a range from 1 to 7 (see scene_1_settings, scene_2_settings, etc.).
+              # You can check the current scene index by using "Helper" in the Home Assistant UI.
+              scene_index_entity_id: !input scene_index_input_text_entity_id
+              current_scene_index: "{{ states(scene_index_entity_id) | int(0) }}"
+
+              # The next scene index is calculated based on the current scene index.
+              # The index will be reset to 1 if it exceeds the maximum number of scenes (7).
+              next_scene_index: >
+                {% set next_index = current_scene_index + 1 %}
+                {% if next_index > 7 %}
+                  1
+                {% else %}
+                  {{ next_index }}
+                {% endif %}
+
+              # Take into account that the scene index is 1-based, but the array is 0-based.
+              next_scene_color: "{{ scene_color_array[next_scene_index - 1] }}"
+              next_scene_color_temp: "{{ scene_color_temp_array[next_scene_index - 1] }}"
+              next_scene_brightness: "{{ scene_brightness_array[next_scene_index - 1] }}"
+              next_scene_ha_scene: "{{ scene_scene_array[next_scene_index - 1] }}"
+
+
+          # --- Dimmer Button Logic ---
+          - choose:
+              # Condition 1: Turn lights off, if they are on right now, AND the I/O button is pressed.
+              - conditions:
+                  - condition: template
+                    value_template: "{{ command_name == 'on_press_release' and lights_on }}"
+                sequence:
+                  - action: light.turn_off
+                    target: "{{target_lights}}"
+                    data:
+                      transition: "{{ transition_time_var }}"
+                  # Reset the scene index to 0 when lights are turned off.
+                  # This is to ensure that the next scene index starts from 1 when lights are turned on again.
+                  - service: input_text.set_value
+                    target:
+                      entity_id: "{{ scene_index_entity_id }}"
+                    data:
+                      value: "0"
+
+              # Condition 2: Turn lights on, if they are on right now, AND the I/O button is pressed or held.
+              - conditions:
+                  - condition: template
+                    value_template: "{{ (command_name == 'on_press_release' and not(lights_on)) or command_name == 'on_hold' }}"
+                sequence:
+                  - action: light.turn_on
+                    target: "{{target_lights}}"
+                    data:
+                      transition: "{{ transition_time_var }}"
+                      color_temp_kelvin: "{{ adaptive_color_temp }}"
+                      brightness_pct: "{{ adaptive_brightness_pct }}"
+
+              # Condition 3: Adjust brightness up, no matter if lights are on or off. They will be turned if off.
+              - conditions:
+                  - condition: template
+                    value_template: "{{ command_name == 'up_press_release' or command_name == 'up_hold' }}"
+                sequence:
+                  - action: light.turn_on
+                    target: "{{target_lights}}"
+                    data:
+                      brightness_step_pct: +10
+                      transition: "{{ brightness_transition_time_var }}"
+
+
+              # Condition 4: Adjust brightness down until 0% (state off). They won't stay at 1 % if you press the button again.
+              - conditions:
+                  - condition: template
+                    value_template: "{{ command_name == 'down_press_release' or  command_name == 'down_hold' }}"
+                sequence:
+                  - action: light.turn_on
+                    target: "{{target_lights}}"
+                    data:
+                      brightness_step_pct: -10
+                      transition: "{{ brightness_transition_time_var }}"
+
+
+              # Condition 5: Scene Cycling Logic when the 'OFF' or 'HUE' button is pressed, depending on the dimmer model
+              - conditions:
+                  - condition: template
+                    value_template: "{{ command_name == 'off_press_release' }}"
+                sequence:
+                  # Update Input Text with the next scene index (RGB, Color Temperature, Home Assistant Scene or None)
+                  - service: input_text.set_value
+                    target:
+                      entity_id: "{{ scene_index_entity_id }}"
+                    data:
+                      value: "{{ next_scene_index }}"
+
+
+                  # -- Reset the scene index to 0 when the next scene index is 'none'. ---
+                  - choose:
+                      - conditions:
+                          - condition: template
+                            value_template: "{{ scene_type_array[next_scene_index] == 'none' }}"
+                        sequence:
+                          # Reset the scene index to 0
+                          # This is to ensure that a "none" scene cannot be activated.
+                          - service: input_text.set_value
+                            target:
+                              entity_id: "{{ scene_index_entity_id }}"
+                            data:
+                              value: "0"
+
+
+                  # --- Choose one block for Scene Type branching ---
+                  - choose:
+                      # Condition 5a: activate an RGB Scene
+                      - conditions:
+                          - condition: template
+                            value_template: "{{ scene_type_array[next_scene_index - 1] == 'rgb' }}"
+                        sequence:
+                          - action: light.turn_on # --- Turn on lights with an RGB scene ---
+                            target: "{{target_lights}}"
+                            data:
+                              transition: "{{ transition_time_var }}"
+                              rgb_color: "{{ next_scene_color }}"
+                              brightness_pct: "{{ next_scene_brightness }}"
+
+
+                      # Condition 5b: activate a Color Temperature Scene
+                      - conditions:
+                          - condition: template
+                            value_template: "{{ scene_type_array[next_scene_index - 1] == 'color_temp' }}"
+                        sequence:
+                          - action: light.turn_on # --- Turn on lights with a Color Temp scene ---
+                            target: "{{target_lights}}"
+                            data:
+                              transition: "{{ transition_time_var }}"
+                              color_temp_kelvin: "{{ next_scene_color_temp }}"
+                              brightness_pct: "{{ next_scene_brightness }}"
+
+                      # Condition 5c: activate a Home Assistant Scene
+                      - conditions:
+                          - condition: template
+                            value_template: "{{ scene_type_array[next_scene_index - 1] == 'scene' }}"
+                        sequence:
+                          - action: scene.turn_on # --- Activate Home Assistant Scene ---
+                            target:
+                              entity_id: "{{ next_scene_ha_scene }}"
 
 mode: queued

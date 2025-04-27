@@ -2,13 +2,14 @@
 
 ## Features
 
-  * **Hue Dimmer Control:**  Provides intuitive control for turning lights on/off and adjusting brightness using your Hue Dimmer. Scene cycling is also implemented using the 'Off' button.
+  * **Hue Dimmer Control:**  Provides intuitive control for turning lights on/off and adjusting brightness using your Hue Dimmer. Scene cycling is also implemented using the 'Off' button or respectively, the 'Hue' button."
   * **Time-Integrated Adaptive Lighting:**  When you turn lights **ON** with the dimmer (after they were off), the blueprint automatically applies time-of-day adjusted color temperature and brightness. This ensures your lighting is comfortable and appropriate for the time of day, transitioning through Morning, Day, Evening, and Night settings. Brightness adjustments via the dimmer maintain the current color temperature.
-  * **Versatile Customizable Scenes (Per-Scene Type Selection):** Define up to 7 distinct lighting scenes. For each scene, you can choose to activate it using:
+  * **Versatile Customizable Scenes (Per-Scene Type Selection):** Define up to 7 distinct lighting scenes. You can even mix them up! For each scene, you can choose to activate it using:
       * **RGB Color:** Set a specific RGB color and brightness.
       * **Color Temperature (Kelvin):** Set a specific color temperature (in Kelvin) and brightness.
       * **Home Assistant Scene:** Trigger a pre-defined Home Assistant Scene, allowing you to control not just lights, but any entities within your Home Assistant setup as part of the scene.
-  * **Scene Cycling:**  Cycle through your defined scenes using the **'Off' button (short press)** on the Hue dimmer. The first press after starting the automation activates Scene 1, subsequent presses cycle through Scene 2, Scene 3, ..., Scene 7, and then back to Scene 1. The current scene index is tracked using a helper entity.
+      * **None:** If want to skip the current as well as all subsequent scenes.
+  * **Scene Cycling:**  Cycle through your defined scenes using the **'Off' button (short press)** on the Hue dimmer. The first press after starting the automation activates Scene 1, subsequent presses cycle through Scene 2, Scene 3, ..., Scene 7, and then back to Scene 1.  Switching the light off using the **'Off' button** or **'hue' button** (both short press) will reset the scene index, so the next press will activate always scene 1. If you want to use less than 7 scenes, you can select "None" for  the follow up scene. All scenes after a "None" scene will be skipped. E.g. if you select "None" for scene 4, the scene cycling will go from scene 1, ..., scene 3, and back to scene 1.  The current scene index is tracked using a helper entity.
   * **Simplified Time Settings:**  Configuration is straightforward with only start times required to define your Morning, Day, Evening, and Night lighting periods.
   * **Smooth Transitions:**  Option for smooth and pleasant transitions for all dimmer button actions and when applying the initial adaptive lighting settings. Separate, shorter transition times can be configured for brightness adjustments for a more responsive feel.
 
@@ -55,11 +56,12 @@ To use this blueprint, you'll need to configure the following inputs in Home Ass
 7.  **Scene 1 Settings, Scene 2 Settings, ..., Scene 7 Settings:** 
 
       * *(Optional)*: Configure up to 7 lighting scenes. For each scene:
-          * **Scene X Type:** Choose the scene type: "RGB Color", "Color Temperature (Kelvin)", or "Home Assistant Scene".
+          * **Scene X Type:** Choose the scene type: "RGB Color", "Color Temperature (Kelvin)", or "Home Assistant Scene". You can even mix them up! If you want to skip the current scene and all subsequent scenes, select "None".
           * Depending on the Scene Type selected, configure the relevant settings:
               * **RGB Color Scenes:** Set the "Color of scene X (RGB)" and "Brightness of scene X".
               * **Color Temperature Scenes:** Set the "Color Temperature of scene X (Kelvin)" and "Brightness of scene X".
               * **Home Assistant Scenes:** Select a pre-defined "Home Assistant Scene for scene X".
+              * **None:** No further configuration is needed. This scene and all subsequent scenes will be skipped in the cycling sequence.
 
 ## Usage
 
@@ -67,20 +69,21 @@ Once you've created an automation using this blueprint, here's how to control yo
 
   * **'On' Button (Press and Release):**
       * **If lights are OFF:** Turns lights ON with time-adaptive color temperature and brightness settings applied.
-      * **If lights are ON:** Turns lights OFF with a transition.
+      * **If lights are ON:** Turns lights OFF with a transition. Scene index is reset to frist scene.
   * **'On' Button (Hold):**
       * Turns lights ON with time-adaptive color temperature and brightness settings applied (even if lights were already on - override to re-apply adaptive settings).
   * **'Off' Button (Press and Release):**
-      * **Scene Cycling:** Activates the next scene in your sequence (Scene 1 -\> Scene 2 -\> ... -\> Scene 7 -\> Scene 1). The first press after automation start activates Scene 1.
+      * **Scene Cycling:** Activates the next scene in your sequence (Scene 1 -\> Scene 2 -\> ... -\> Scene 7 -\> Scene 1). The first press after automation start activates Scene 1. <br/> Note: You can skip all following scenes by selecting "None" for a scene in the configuration.
   * **'Dim Up' Button (Press and Release / Hold):**
-      * Increases the brightness of the lights by 10%.
+      * Increases the brightness of the lights by 10%. Lights will turn on, if they are off.
   * **'Dim Down' Button (Press and Release / Hold):**
-      * Decreases the brightness of the lights by 10%.
+      * Decreases the brightness of the lights by 10%. Light will turn off if brightness is lower than 1%.
 
 ## Special thanks to
   * DefenestrateIT for the lights_on check code (https://community.home-assistant.io/t/wth-howto-reference-a-device-areas-state-on-off-unavailable-with-a-target-selector/484428/43)
   * Blacky for the inspiration to use collapse in the input section
   * Google for a LOT of free Gemini Flash 2 Thinking tokens
+  * ["buz-ch on github"](https://github.com/buz-ch/blueprint-huedimmerwithscenecycling) for the initial bluescript!
 
 
 ## ⚠️ Important Notes and Disclaimer
