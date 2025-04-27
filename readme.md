@@ -89,5 +89,6 @@ Once you've created an automation using this blueprint, here's how to control yo
   * **Input Text Helper is Mandatory for Scene Cycling:** Scene cycling functionality will **not work** without properly creating and configuring the `input_text` helper entity as described in the setup.
   * **Default Scene Type is RGB:** If you use scene cycling without customizing scene settings, scenes will default to RGB color scenes, which might not be ideal for bulbs that don't support RGB color. 
   * **Disclaimer:** This software is provided "as is," without any warranties or guarantees of any kind, express or implied. Use at your own risk.
+  * **License:** 3 clause BSDL
 
 Enjoy your enhanced Hue Dimmer experience with time-adaptive lighting and scene control\!
